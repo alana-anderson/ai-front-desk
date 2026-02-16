@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Front Desk — 123 Preschool
 
-## Getting Started
+An AI-powered front desk assistant for early education centers. Parents get fast, trustworthy answers grounded in school policies. Operators see what's being asked and can improve the system over time.
 
-First, run the development server:
+## Quick Start
 
 ```bash
+npm install
+npx prisma migrate dev --name init
+npm run seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and select a user to log in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Seed Users
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Name | Role | Email |
+|------|------|-------|
+| Leslie Knope | Admin | leslie@123preschool.com |
+| Dwight Schrute | Staff | dwight@123preschool.com |
+| Monica Geller | Parent | monica@parent.com |
+| David Rose | Parent | david@parent.com |
 
-## Learn More
+**To switch users:** Click your avatar at the bottom of the sidebar to log out, then select a different user.
 
-To learn more about Next.js, take a look at the following resources:
+## Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Copy `.env.example` to `.env` and fill in:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `DATABASE_URL` — SQLite connection string (default: `file:./dev.db`)
+- `OPENAI_API_KEY` — Your OpenAI API key
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Next.js 16** (App Router, TypeScript)
+- **Prisma** + SQLite (Postgres-ready)
+- **Vercel AI SDK** + OpenAI (GPT-4o mini)
+- **shadcn/ui** components
+- **Tailwind CSS v4**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Features
+
+### Parent Experience
+- Proactive daily briefing (time-aware: today's lunch, pickup time, upcoming events)
+- Conversational AI chat grounded in school policies
+- Suggestion cards for common questions
+- Graceful uncertainty handling
+
+### Operator Experience
+- Personalized welcome with question stats
+- Knowledge base editor (inline edit, add new entries)
+- Question log with "needs attention" badges for struggles
+- All changes immediately reflected in AI responses
+
+## Design
+
+- **Palette**: Indigo/periwinkle (#6366F1) as the primary accent
+- **Icons**: Lucide icon library throughout (no emojis)
+- **Layout**: Light, airy with generous whitespace
+- **Mobile-first**: Responsive design for all screens
+
+## Architecture
+
+- **Knowledge table**: All school policies stored as structured entries; AI grounds answers from this
+- **Conversations + Messages**: Logged with `struggle` and `noMatch` flags for operator analytics
+- **Briefing API**: Time-aware endpoint that returns contextual info cards for parents
+- **Mock auth**: Cookie-based role switcher for prototype (no NextAuth overhead)

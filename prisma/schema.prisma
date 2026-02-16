@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  createdAt     DateTime       @default(now())
+  users         User[]
+  knowledge     Knowledge[]
+  conversations Conversation[]
+}
+
+model User {
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  role           String
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  conversations  Conversation[]
+  createdAt      DateTime       @default(now())
+}
+
+model Knowledge {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  category       String
+  question       String?
+  answer         String
+  source         String       @default("manual")
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Conversation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  messages       Message[]
+  createdAt      DateTime     @default(now())
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String
+  content        String
+  intent         String?
+  confidence     Float?
+  struggle       Boolean      @default(false)
+  noMatch        Boolean      @default(false)
+  knowledgeIds   Json?
+  createdAt      DateTime     @default(now())
+}
