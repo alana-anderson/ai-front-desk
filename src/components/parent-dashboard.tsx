@@ -83,7 +83,7 @@ export function ParentDashboard({ user }: { user: User }) {
 
         {/* Daily Briefing */}
         {briefing.length > 0 && (
-          <div className="mb-10 w-full max-w-3xl mx-auto">
+          <div className="mb-10 w-full max-w-3xl mx-auto text-left">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-slate-800">Daily Briefing</h2>
               <span className="text-sm text-slate-400">

@@ -13,6 +13,21 @@ export async function GET() {
 
   const items: { icon: string; text: string; type: string }[] = [];
 
+  // School status (Open 8am / Closed)
+  const openHour = 8;
+  const closingHour = 17;
+  const closingMinute = 30;
+  const isWeekday = now.getDay() >= 1 && now.getDay() <= 5;
+  const currentMinutes = hour * 60 + now.getMinutes();
+  const openMinutes = openHour * 60;
+  const closeMinutes = closingHour * 60 + closingMinute;
+  const isOpen = isWeekday && currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+  items.push({
+    icon: "clock",
+    text: isOpen ? "Open 8am" : "Closed",
+    type: "school_status",
+  });
+
   // Today's meal
   const mealKnowledge = await prisma.knowledge.findFirst({
     where: { organizationId: user.organizationId, category: "daily_meal" },
@@ -30,9 +45,7 @@ export async function GET() {
     where: { organizationId: user.organizationId, category: "hours" },
   });
   if (hoursKnowledge) {
-    const closingHour = 17;
-    const closingMinute = 30;
-    const minutesUntilClose = (closingHour * 60 + closingMinute) - (hour * 60 + now.getMinutes());
+    const minutesUntilClose = closeMinutes - currentMinutes;
 
     if (minutesUntilClose > 0 && minutesUntilClose <= 30) {
       items.push({
