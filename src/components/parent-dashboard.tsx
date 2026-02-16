@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { CalendarDays, Thermometer, School, UtensilsCrossed, Clock, Calendar, AlertCircle, Camera, Building2 } from "lucide-react";
+import { CalendarDays, Thermometer, School, UtensilsCrossed, Clock, Calendar, AlertTriangle, Building2 } from "lucide-react";
 
 type User = { id: string; name: string; role: string; organization: { name: string } | null };
-type BriefingItem = { icon: string; text: string; type: string };
+type BriefingItem = { icon: string; label: string; text: string; type: string };
 
 const suggestionCards = [
   { 
@@ -90,47 +90,53 @@ export function ParentDashboard({ user }: { user: User }) {
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {briefing.map((item, i) => {
-                let icon = <AlertCircle className="w-5 h-5" />;
+                let icon = <Building2 className="w-5 h-5" />;
                 let iconBg = "bg-slate-100";
                 let iconColor = "text-slate-500";
-                let label = "INFO";
+                let cardBg = "bg-white";
+                let labelColor = "text-slate-400";
 
-                if (item.icon === "utensils") {
-                  icon = <UtensilsCrossed className="w-5 h-5" />;
-                  iconBg = "bg-sky-100";
-                  iconColor = "text-sky-600";
-                  label = "TODAY'S LUNCH";
-                } else if (item.icon === "clock") {
+                if (item.type === "urgent") {
+                  icon = <AlertTriangle className="w-5 h-5" />;
+                  iconBg = "bg-red-100";
+                  iconColor = "text-red-600";
+                  cardBg = "bg-red-50/40 border-red-200";
+                  labelColor = "text-red-500";
+                } else if (item.type === "school_status") {
                   icon = <Building2 className="w-5 h-5" />;
                   iconBg = "bg-indigo-100";
                   iconColor = "text-indigo-600";
-                  label = item.type === "urgent" ? "URGENT" : "SCHOOL STATUS";
-                } else if (item.icon === "calendar") {
-                  icon = <Camera className="w-5 h-5" />;
+                } else if (item.type === "meal") {
+                  icon = <UtensilsCrossed className="w-5 h-5" />;
+                  iconBg = "bg-emerald-100";
+                  iconColor = "text-emerald-600";
+                } else if (item.type === "pickup") {
+                  icon = <Clock className="w-5 h-5" />;
+                  iconBg = "bg-amber-100";
+                  iconColor = "text-amber-600";
+                } else if (item.type === "event" || item.type === "tomorrow") {
+                  icon = <Calendar className="w-5 h-5" />;
                   iconBg = "bg-rose-100";
                   iconColor = "text-rose-600";
-                  label = "REMINDER";
                 }
 
                 return (
                   <Card
                     key={i}
-                    className={`p-5 border border-slate-100 ${
-                      item.type === "urgent" ? "bg-amber-50/30" : "bg-white"
-                    }`}
+                    className={`p-5 border border-slate-100 ${cardBg}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0 ${iconColor}`}>
                         {icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-                          {label}
+                        <p className={`text-xs font-semibold uppercase tracking-wide mb-1 ${labelColor}`}>
+                          {item.label}
                         </p>
                         <p className="text-sm font-semibold text-slate-800 leading-snug">
-                          {item.text.replace(/^(Today's lunch: |Heads up: |Pickup by |Reminder: )/i, "")}
+                          {item.text}
                         </p>
                       </div>
                     </div>
