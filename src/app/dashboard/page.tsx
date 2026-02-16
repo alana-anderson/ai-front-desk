@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     where: {
       role: "assistant",
       struggle: true,
-      createdAt: { gte: oneDayAgo },
+      resolved: null,
       conversation: { organizationId: user.organizationId },
     },
   });

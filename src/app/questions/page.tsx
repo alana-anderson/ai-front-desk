@@ -28,6 +28,7 @@ export default async function QuestionsPage() {
       question: string;
       answer: string;
       struggle: boolean;
+      resolved: string | null;
       userName: string;
       createdAt: string;
     }[] = [];
@@ -37,16 +38,25 @@ export default async function QuestionsPage() {
       if (msg.role === "user") {
         const response = conv.messages[i + 1];
         result.push({
-          id: msg.id,
+          id: response?.id || msg.id,
           question: msg.content,
           answer: response?.content || "(no response yet)",
           struggle: response?.struggle || false,
+          resolved: response?.resolved || null,
           userName: conv.user.name,
           createdAt: msg.createdAt.toISOString(),
         });
       }
     }
     return result;
+  });
+
+  // Sort: unresolved struggles first, then by date descending
+  pairs.sort((a, b) => {
+    const aNeeds = a.struggle && !a.resolved ? 1 : 0;
+    const bNeeds = b.struggle && !b.resolved ? 1 : 0;
+    if (aNeeds !== bNeeds) return bNeeds - aNeeds;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return (
@@ -58,7 +68,7 @@ export default async function QuestionsPage() {
             See what parents are asking and where the AI needs help.
           </p>
         </div>
-        <QuestionLog pairs={pairs} />
+        <QuestionLog pairs={pairs} orgId={user.organizationId} />
       </div>
     </AppShell>
   );

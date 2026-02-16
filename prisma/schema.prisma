@@ -63,5 +63,7 @@ model Message {
   struggle       Boolean      @default(false)
   noMatch        Boolean      @default(false)
   knowledgeIds   Json?
+  resolved       String?      // null = unresolved, "rectified" = knowledge added, "ignored" = dismissed
+  resolvedAt     DateTime?
   createdAt      DateTime     @default(now())
 }

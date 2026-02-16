@@ -86,11 +86,33 @@ ${knowledgeContext}`;
     system: systemPrompt,
     messages,
     async onFinish({ text }) {
-      // Determine if this was a struggle (simple heuristic: if response contains the "not sure" fallback)
-      const isStruggle =
-        text.includes("not sure about that") ||
-        text.includes("please call us") ||
-        text.includes("don't have information");
+      const lower = text.toLowerCase();
+
+      // Detect struggle: AI couldn't answer confidently from the knowledge base
+      const strugglePhrases = [
+        "not sure about that",
+        "don't have information",
+        "don't have specific information",
+        "i'm not sure",
+        "i don't have",
+        "unable to find",
+        "not covered in",
+        "not in our records",
+        "please call us",
+        "please contact",
+        "reach out to",
+        "check with the front desk",
+        "recommend contacting",
+        "i apologize",
+        "unfortunately, i don't",
+        "unfortunately, i can't",
+        "i don't currently have",
+        "beyond what i can",
+        "outside of my",
+        "i'd recommend speaking",
+      ];
+
+      const isStruggle = strugglePhrases.some((phrase) => lower.includes(phrase));
 
       await prisma.message.create({
         data: {
