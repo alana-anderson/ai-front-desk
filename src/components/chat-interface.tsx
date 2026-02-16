@@ -113,23 +113,28 @@ function ChatContent({ user }: { user: User }) {
       </div>
 
       <div className="border-t border-slate-100 bg-white px-4 py-4">
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 max-w-3xl mx-auto">
-          <input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={`Ask ${user.organization?.name || "123 Preschool"} a question...`}
-            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent bg-slate-50/50"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !inputValue.trim()}
-            className="w-10 h-10 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 flex items-center justify-center transition-colors shrink-0"
-          >
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
-            </svg>
-          </button>
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <div className="relative group">
+            <div className="absolute -inset-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur-sm" />
+            <div className="relative flex items-center gap-2 bg-white rounded-2xl border-2 border-slate-200 focus-within:border-transparent p-2">
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={`Ask ${user.organization?.name || "123 Preschool"} a question...`}
+                className="flex-1 px-3 py-2 text-base focus:outline-none bg-transparent"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !inputValue.trim()}
+                className="w-10 h-10 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:opacity-50 flex items-center justify-center transition-colors shrink-0"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </form>
       </div>
     </div>
