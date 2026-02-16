@@ -5,6 +5,7 @@
 1. GitHub account
 2. Vercel account (free tier works)
 3. OpenAI API key with credits
+4. Neon Postgres database (provisioned via Vercel Storage or neon.tech)
 
 ## Steps
 
@@ -34,57 +35,41 @@ Or manually:
    - **Output Directory**: `.next` (default)
    - **Install Command**: `npm install` (default)
 
-5. **Environment Variables** (critical):
-   - `DATABASE_URL`: For production, use Vercel Postgres or Neon:
-     - **Vercel Postgres**: Create a database in the Vercel dashboard -> copy the `POSTGRES_PRISMA_URL`
-     - **Neon**: Sign up at neon.tech -> create database -> copy connection string
+5. **Environment Variables** (critical — all 3 are required):
+   - `DATABASE_URL`: Your Neon **pooled** connection string (ends with `?sslmode=require`)
+   - `DATABASE_URL_UNPOOLED`: Your Neon **unpooled / direct** connection string (ends with `?sslmode=require`)
    - `OPENAI_API_KEY`: Your OpenAI API key
+
+   If you added Neon via Vercel Storage, these variables are auto-injected.
 
 6. Click "Deploy"
 
-### 3. Set up the database
+### 3. Database setup
 
-After the first deploy (it may fail if DB isn't ready):
+The database schema is pushed using `prisma db push` (no migrations directory needed).
+
+If you need to re-push the schema or re-seed:
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Push schema to Neon
+DATABASE_URL="<your-pooled-url>" DATABASE_URL_UNPOOLED="<your-direct-url>" npx prisma db push
 
-# Link project
-vercel link
-
-# Run migration on production database
-vercel env pull .env.production
-DATABASE_URL="<your-production-db-url>" npx prisma migrate deploy
-
-# Run seed
-DATABASE_URL="<your-production-db-url>" npx tsx prisma/seed.mjs
+# Seed the database
+DATABASE_URL="<your-pooled-url>" npx tsx prisma/seed.mjs
 ```
 
-Or use Vercel's dashboard to run these as one-time commands.
+### 4. How Prisma connects to Neon
 
-### 4. Production database options
+The schema uses two connection strings:
 
-**Vercel Postgres** (easiest):
-- Create in Vercel dashboard -> Storage -> Create Database -> Postgres
-- Auto-injects `POSTGRES_PRISMA_URL` as `DATABASE_URL`
-- Update `prisma/schema.prisma` provider to `"postgresql"`
+- `DATABASE_URL` (pooled via pgbouncer) — used at runtime for queries
+- `DATABASE_URL_UNPOOLED` (direct) — used by Prisma for schema push/migrations
 
-**Neon** (free tier, fast):
-1. Sign up at [neon.tech](https://neon.tech)
-2. Create a database
-3. Copy the connection string (ends with `?sslmode=require`)
-4. Add to Vercel env vars as `DATABASE_URL`
-5. Update `prisma/schema.prisma` provider to `"postgresql"`
+Both are provided automatically if you provision Neon through Vercel Storage.
 
-### 5. Note on SQLite vs Postgres
+### 5. Vercel build pipeline
 
-The prototype uses SQLite for local dev. For production on Vercel:
-1. Change `prisma/schema.prisma` datasource provider to `"postgresql"`
-2. Run `npx prisma migrate dev` locally to create a new migration
-3. Commit the new migration
-4. Deploy to Vercel
-5. Run `npx prisma migrate deploy` on production DB (see step 3)
+The `postinstall` script runs `prisma generate` to ensure the Prisma client is generated during Vercel's `npm install` step. The build script also chains `prisma generate && next build` as a fallback.
 
 ## Hosted URL
 
