@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { CalendarDays, Thermometer, School, UtensilsCrossed, Clock, Calendar, AlertCircle } from "lucide-react";
+import { CalendarDays, Thermometer, School, UtensilsCrossed, Clock, Calendar, AlertCircle, Camera, Building2 } from "lucide-react";
 
 type User = { id: string; name: string; role: string; organization: { name: string } | null };
 type BriefingItem = { icon: string; text: string; type: string };
@@ -81,25 +81,63 @@ export function ParentDashboard({ user }: { user: User }) {
           How can {user.organization?.name || "we"} help?
         </p>
 
-        {/* Briefing cards */}
+        {/* Daily Briefing */}
         {briefing.length > 0 && (
-          <div className="flex flex-wrap gap-3 justify-center mb-8">
-            {briefing.map((item, i) => (
-              <Card
-                key={i}
-                className={`px-4 py-3 text-sm flex items-center gap-2 border ${
-                  item.type === "urgent"
-                    ? "bg-amber-50 border-amber-200 text-amber-800"
-                    : "bg-indigo-50/50 border-indigo-100 text-slate-600"
-                }`}
-              >
-                {item.icon === "utensils" && <UtensilsCrossed className="w-4 h-4" />}
-                {item.icon === "clock" && <Clock className="w-4 h-4" />}
-                {item.icon === "calendar" && <Calendar className="w-4 h-4" />}
-                {!["utensils", "clock", "calendar"].includes(item.icon) && <AlertCircle className="w-4 h-4" />}
-                <span>{item.text}</span>
-              </Card>
-            ))}
+          <div className="mb-10 w-full max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-800">Daily Briefing</h2>
+              <span className="text-sm text-slate-400">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {briefing.map((item, i) => {
+                let icon = <AlertCircle className="w-5 h-5" />;
+                let iconBg = "bg-slate-100";
+                let iconColor = "text-slate-500";
+                let label = "INFO";
+
+                if (item.icon === "utensils") {
+                  icon = <UtensilsCrossed className="w-5 h-5" />;
+                  iconBg = "bg-sky-100";
+                  iconColor = "text-sky-600";
+                  label = "TODAY'S LUNCH";
+                } else if (item.icon === "clock") {
+                  icon = <Building2 className="w-5 h-5" />;
+                  iconBg = "bg-indigo-100";
+                  iconColor = "text-indigo-600";
+                  label = item.type === "urgent" ? "URGENT" : "SCHOOL STATUS";
+                } else if (item.icon === "calendar") {
+                  icon = <Camera className="w-5 h-5" />;
+                  iconBg = "bg-rose-100";
+                  iconColor = "text-rose-600";
+                  label = "REMINDER";
+                }
+
+                return (
+                  <Card
+                    key={i}
+                    className={`p-5 border border-slate-100 ${
+                      item.type === "urgent" ? "bg-amber-50/30" : "bg-white"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0 ${iconColor}`}>
+                        {icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                          {label}
+                        </p>
+                        <p className="text-sm font-semibold text-slate-800 leading-snug">
+                          {item.text.replace(/^(Today's lunch: |Heads up: |Pickup by |Reminder: )/i, "")}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
 
