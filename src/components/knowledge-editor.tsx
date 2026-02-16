@@ -6,7 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 type KnowledgeItem = {
   id: string;
@@ -32,7 +34,66 @@ const categoryLabels: Record<string, string> = {
   enrollment: "Enrollment",
   attendance: "Attendance",
   upcoming_event: "Events",
+  general: "General",
 };
+
+const categoryOptions = Object.entries(categoryLabels).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+function CategoryCombobox({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center justify-between w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-slate-50 transition-colors"
+        >
+          <span className={value ? "text-slate-800" : "text-slate-400"}>
+            {value ? categoryLabels[value] || value : "Select category..."}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search categories..." />
+          <CommandList>
+            <CommandEmpty>No category found.</CommandEmpty>
+            <CommandGroup>
+              {categoryOptions.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.label}
+                  onSelect={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={`mr-2 h-4 w-4 ${
+                      value === option.value ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function KnowledgeEditor({
   items: initialItems,
@@ -43,6 +104,7 @@ export function KnowledgeEditor({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState("");
   const [editQuestion, setEditQuestion] = useState("");
   const [editAnswer, setEditAnswer] = useState("");
   const [saving, setSaving] = useState(false);
@@ -53,6 +115,7 @@ export function KnowledgeEditor({
 
   function startEdit(item: KnowledgeItem) {
     setEditing(item.id);
+    setEditCategory(item.category);
     setEditQuestion(item.question || "");
     setEditAnswer(item.answer);
   }
@@ -62,7 +125,7 @@ export function KnowledgeEditor({
     await fetch("/api/knowledge", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, question: editQuestion, answer: editAnswer }),
+      body: JSON.stringify({ id, category: editCategory, question: editQuestion, answer: editAnswer }),
     });
     setSaving(false);
     setEditing(null);
@@ -92,15 +155,54 @@ export function KnowledgeEditor({
 
   return (
     <div className="space-y-3">
+      {/* Add new entry — always at top */}
+      {adding ? (
+        <Card className="p-4 border-2 border-dashed border-indigo-200 bg-indigo-50/30">
+          <div className="space-y-3">
+            <CategoryCombobox value={newCategory} onChange={setNewCategory} />
+            <input
+              value={newQuestion}
+              onChange={(e) => setNewQuestion(e.target.value)}
+              placeholder="Question (optional)"
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            <Textarea
+              value={newAnswer}
+              onChange={(e) => setNewAnswer(e.target.value)}
+              placeholder="Answer"
+              rows={4}
+              className="text-sm"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={addNew} disabled={saving || !newAnswer.trim()}>
+                {saving ? "Adding..." : "Add Entry"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setAdding(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <button
+          onClick={() => setAdding(true)}
+          className="w-full py-4 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-400 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+        >
+          + Add new knowledge entry
+        </button>
+      )}
+
+      {/* Existing entries */}
       {initialItems.map((item) => (
         <Card key={item.id} className="p-4 border border-slate-100">
           {editing === item.id ? (
             <div className="space-y-3">
-              <Input
+              <CategoryCombobox value={editCategory} onChange={setEditCategory} />
+              <input
                 value={editQuestion}
                 onChange={(e) => setEditQuestion(e.target.value)}
                 placeholder="Question (optional)"
-                className="text-sm"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <Textarea
                 value={editAnswer}
@@ -136,47 +238,6 @@ export function KnowledgeEditor({
           )}
         </Card>
       ))}
-
-      {adding ? (
-        <Card className="p-4 border-2 border-dashed border-indigo-200 bg-indigo-50/30">
-          <div className="space-y-3">
-            <Input
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Category (e.g. sick_policy, meals)"
-              className="text-sm"
-            />
-            <Input
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="Question (optional)"
-              className="text-sm"
-            />
-            <Textarea
-              value={newAnswer}
-              onChange={(e) => setNewAnswer(e.target.value)}
-              placeholder="Answer"
-              rows={4}
-              className="text-sm"
-            />
-            <div className="flex gap-2">
-              <Button size="sm" onClick={addNew} disabled={saving || !newAnswer.trim()}>
-                {saving ? "Adding..." : "Add Entry"}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => setAdding(false)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Card>
-      ) : (
-        <button
-          onClick={() => setAdding(true)}
-          className="w-full py-4 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-400 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
-        >
-          + Add new knowledge entry
-        </button>
-      )}
     </div>
   );
 }

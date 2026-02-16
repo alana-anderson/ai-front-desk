@@ -73,7 +73,7 @@ export function OperatorDashboard({
               )}
             </div>
             <p className="text-sm text-slate-500 text-left">
-              {struggles > 0 ? "Questions needing your attention" : "All questions handled well"}
+              Number of open inquiries
             </p>
           </Card>
         </div>
@@ -87,31 +87,43 @@ export function OperatorDashboard({
             className="p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all border border-slate-100"
             onClick={() => router.push("/knowledge")}
           >
-            <div className="mb-2">
-              <Book className="w-8 h-8 text-indigo-500" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                <Book className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-slate-700">Edit Knowledge Base</p>
+                <p className="text-xs text-slate-400 mt-0.5">Update policies and info</p>
+              </div>
             </div>
-            <p className="text-sm font-medium text-slate-700">Edit Knowledge Base</p>
-            <p className="text-xs text-slate-400 mt-1">Update policies and info</p>
           </Card>
           <Card
             className="p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all border border-slate-100"
             onClick={() => router.push("/questions")}
           >
-            <div className="mb-2">
-              <MessageSquare className="w-8 h-8 text-indigo-500" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                <MessageSquare className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-slate-700">View Questions</p>
+                <p className="text-xs text-slate-400 mt-0.5">See what parents are asking</p>
+              </div>
             </div>
-            <p className="text-sm font-medium text-slate-700">View Questions</p>
-            <p className="text-xs text-slate-400 mt-1">See what parents are asking</p>
           </Card>
           <Card
             className="p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all border border-slate-100"
             onClick={() => router.push("/chat")}
           >
-            <div className="mb-2">
-              <Sparkles className="w-8 h-8 text-indigo-500" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-slate-700">Try the AI Chat</p>
+                <p className="text-xs text-slate-400 mt-0.5">Test it yourself</p>
+              </div>
             </div>
-            <p className="text-sm font-medium text-slate-700">Try the AI Chat</p>
-            <p className="text-xs text-slate-400 mt-1">Test it yourself</p>
           </Card>
         </div>
       </div>

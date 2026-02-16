@@ -8,11 +8,17 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id, question, answer } = await req.json();
+  const { id, category, question, answer } = await req.json();
+
+  const data: { question: string | null; answer: string; category?: string } = {
+    question: question || null,
+    answer,
+  };
+  if (category) data.category = category;
 
   const updated = await prisma.knowledge.update({
     where: { id },
-    data: { question: question || null, answer },
+    data,
   });
 
   return NextResponse.json(updated);

@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import Link from "next/link";
 
 type User = {
@@ -49,7 +50,7 @@ export function AppShell({
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-16 bg-white border-r border-slate-100 flex flex-col items-center py-4 gap-2 shrink-0">
+      <aside className="w-16 bg-white border-r border-slate-100 flex flex-col items-center py-4 gap-2 shrink-0 fixed top-0 left-0 h-screen z-50">
         <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
           <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21" />
@@ -59,35 +60,46 @@ export function AppShell({
           {items.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                  isActive
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-                }`}
-                title={item.label}
-              >
-                <item.icon />
-              </Link>
+              <Tooltip key={item.href}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={item.href}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      isActive
+                        ? "bg-indigo-50 text-indigo-600"
+                        : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <item.icon />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </nav>
-        <button
-          onClick={handleLogout}
-          className="mt-auto mb-2"
-          title={`Signed in as ${user.name}`}
-        >
-          <Avatar className="h-9 w-9 bg-indigo-50 text-indigo-700">
-            <AvatarFallback className="bg-indigo-50 text-indigo-700 text-xs font-semibold">
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleLogout}
+              className="mt-auto mb-2 cursor-pointer rounded-full transition-transform hover:scale-110 hover:ring-2 hover:ring-indigo-200 hover:ring-offset-2"
+            >
+              <Avatar className="h-9 w-9 bg-indigo-50 text-indigo-700">
+                <AvatarFallback className="bg-indigo-50 text-indigo-700 text-xs font-semibold">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            Choose account
+          </TooltipContent>
+        </Tooltip>
       </aside>
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 overflow-y-auto ml-16">{children}</main>
     </div>
   );
 }
