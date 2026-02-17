@@ -4,10 +4,17 @@ import { prisma } from "@/lib/db";
 import { AppShell } from "@/components/app-shell";
 import { QuestionLog } from "@/components/question-log";
 
-export default async function QuestionsPage() {
+export default async function QuestionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role === "parent") redirect("/dashboard");
+
+  const params = await searchParams;
+  const filterAttention = params.filter === "attention";
 
   const conversations = await prisma.conversation.findMany({
     where: { organizationId: user.organizationId },
@@ -22,7 +29,7 @@ export default async function QuestionsPage() {
   });
 
   // Transform into question-answer pairs
-  const pairs = conversations.flatMap((conv) => {
+  const allPairs = conversations.flatMap((conv) => {
     const result: {
       id: string;
       question: string;
@@ -51,6 +58,11 @@ export default async function QuestionsPage() {
     return result;
   });
 
+  // If filtered to attention-only, show only unresolved struggles
+  const pairs = filterAttention
+    ? allPairs.filter((p) => p.struggle && !p.resolved)
+    : allPairs;
+
   // Sort: unresolved struggles first, then by date descending
   pairs.sort((a, b) => {
     const aNeeds = a.struggle && !a.resolved ? 1 : 0;
@@ -63,10 +75,22 @@ export default async function QuestionsPage() {
     <AppShell user={user} isOperator={true}>
       <div className="p-6 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-800">Parent Questions</h1>
+          <h1 className="text-2xl font-bold text-slate-800">
+            {filterAttention ? "Needs Attention" : "Parent Questions"}
+          </h1>
           <p className="text-sm text-slate-500 mt-1">
-            See what parents are asking and where the AI needs help.
+            {filterAttention
+              ? "Questions where the AI couldn\u2019t provide a confident answer."
+              : "See what parents are asking and where the AI needs help."}
           </p>
+          {filterAttention && (
+            <a
+              href="/questions"
+              className="text-sm text-indigo-500 hover:text-indigo-600 mt-2 inline-block"
+            >
+              View all questions
+            </a>
+          )}
         </div>
         <QuestionLog pairs={pairs} orgId={user.organizationId} />
       </div>

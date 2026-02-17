@@ -11,12 +11,12 @@ export default async function DashboardPage() {
 
   // Stats for operator welcome
   const now = new Date();
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const recentQuestions = await prisma.message.count({
     where: {
       role: "user",
-      createdAt: { gte: oneDayAgo },
+      createdAt: { gte: startOfToday },
       conversation: { organizationId: user.organizationId },
     },
   });

@@ -54,8 +54,12 @@ export function OperatorDashboard({
           </Card>
 
           <Card
-            className="p-6 cursor-pointer hover:shadow-md hover:border-amber-200 transition-all border border-slate-100"
-            onClick={() => router.push("/questions")}
+            className={`p-6 transition-all border border-slate-100 ${
+              struggles > 0
+                ? "cursor-pointer hover:shadow-md hover:border-amber-200"
+                : "opacity-75"
+            }`}
+            onClick={struggles > 0 ? () => router.push("/questions?filter=attention") : undefined}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-3xl font-bold text-slate-800">{struggles}</span>
