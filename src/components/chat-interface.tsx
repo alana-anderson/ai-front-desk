@@ -79,8 +79,8 @@ function ChatContent({ user }: { user: User }) {
           </div>
         )}
 
-        {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+        {messages.map((m, idx) => (
+          <div key={`${m.id}-${idx}`} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 m.role === "user"
