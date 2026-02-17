@@ -58,7 +58,8 @@ export async function POST(req: Request) {
 RULES:
 - Answer ONLY based on the school policies and information provided below. Do not make up information.
 - Be warm, concise, and trustworthy. Parents are often anxious and busy.
-- If you cannot find an answer in the provided information, say: "I'm not sure about that — please call us at (505) 767-6500 or email info@123preschool.com and we'll help you right away."
+- If you cannot find an answer in the provided information, you MUST start your response with exactly "[UNSURE]" followed by a helpful message like: "[UNSURE] I don't have that information yet — please call us at (505) 767-6500 or email info@123preschool.com and we'll help you right away."
+- Only use the [UNSURE] tag when you genuinely cannot answer from the information below. If the answer IS in the policies, respond normally without the tag.
 - Keep responses short (2-4 sentences) unless more detail is needed.
 - When citing policies (like sick policy, fees), be specific with the details.
 
@@ -86,39 +87,15 @@ ${knowledgeContext}`;
     system: systemPrompt,
     messages,
     async onFinish({ text }) {
-      const lower = text.toLowerCase();
-
-      // Detect struggle: AI couldn't answer confidently from the knowledge base
-      const strugglePhrases = [
-        "not sure about that",
-        "don't have information",
-        "don't have specific information",
-        "i'm not sure",
-        "i don't have",
-        "unable to find",
-        "not covered in",
-        "not in our records",
-        "please call us",
-        "please contact",
-        "reach out to",
-        "check with the front desk",
-        "recommend contacting",
-        "i apologize",
-        "unfortunately, i don't",
-        "unfortunately, i can't",
-        "i don't currently have",
-        "beyond what i can",
-        "outside of my",
-        "i'd recommend speaking",
-      ];
-
-      const isStruggle = strugglePhrases.some((phrase) => lower.includes(phrase));
+      // The AI prefixes responses with [UNSURE] when it can't find an answer
+      const isStruggle = text.startsWith("[UNSURE]");
+      const cleanText = isStruggle ? text.replace(/^\[UNSURE\]\s*/, "") : text;
 
       await prisma.message.create({
         data: {
           conversationId: convId,
           role: "assistant",
-          content: text,
+          content: cleanText,
           struggle: isStruggle,
           noMatch: isStruggle,
           knowledgeIds: isStruggle ? [] : knowledgeIds,

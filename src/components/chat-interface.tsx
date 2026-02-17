@@ -90,7 +90,7 @@ function ChatContent({ user }: { user: User }) {
             >
               <div className="whitespace-pre-wrap">
                 {m.parts?.map((part, i) =>
-                  part.type === "text" ? <span key={i}>{part.text}</span> : null
+                  part.type === "text" ? <span key={i}>{part.text.replace(/^\[UNSURE\]\s*/g, "")}</span> : null
                 )}
               </div>
             </div>
