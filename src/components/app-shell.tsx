@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 type User = {
   id: string;
@@ -40,8 +44,10 @@ export function AppShell({
   const router = useRouter();
   const pathname = usePathname();
   const items = isOperator ? operatorNavItems : navItems;
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLogout() {
+    setMobileOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
@@ -49,12 +55,10 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-16 bg-white border-r border-slate-100 flex flex-col items-center py-4 gap-2 shrink-0 fixed top-0 left-0 h-screen z-50">
-        <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21" />
-          </svg>
+      {/* ===== DESKTOP SIDEBAR (hidden on mobile) ===== */}
+      <aside className="hidden md:flex w-16 bg-white border-r border-slate-100 flex-col items-center py-4 gap-2 shrink-0 fixed top-0 left-0 h-screen z-50">
+        <div className="w-9 h-9 rounded-xl overflow-hidden mb-4">
+          <Image src="/fav.png" alt="Logo" width={36} height={36} className="object-contain" />
         </div>
         <nav className="flex flex-col items-center gap-1 flex-1">
           {items.map((item) => {
@@ -98,8 +102,97 @@ export function AppShell({
           </TooltipContent>
         </Tooltip>
       </aside>
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto ml-16">{children}</main>
+
+      {/* ===== MOBILE TOP BAR (hidden on desktop) ===== */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 z-50">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <button className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors">
+              <Menu className="w-5 h-5" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-0 [&>button]:hidden">
+            <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+            {/* Drawer header */}
+            <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-indigo-50/50 to-white">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-11 w-11 bg-indigo-100 text-indigo-700">
+                    <AvatarFallback className="bg-indigo-100 text-indigo-700 text-sm font-semibold">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{user.name}</p>
+                    <p className="text-xs text-slate-400 capitalize">{user.role}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Drawer nav items */}
+            <nav className="flex flex-col p-3 gap-1">
+              {items.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                      isActive
+                        ? "bg-indigo-50 text-indigo-600"
+                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <item.icon />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Drawer footer */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100">
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                </svg>
+                <span className="text-sm font-medium">Switch Account</span>
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Center logo */}
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <Image src="/logo.png" alt="Logo" width={32} height={32} className="object-contain" />
+        </div>
+
+        {/* Right avatar */}
+        <button
+          onClick={handleLogout}
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+        >
+          <Avatar className="h-8 w-8 bg-indigo-50 text-indigo-700">
+            <AvatarFallback className="bg-indigo-50 text-indigo-700 text-[10px] font-semibold">
+              {getInitials(user.name)}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+      </header>
+
+      {/* ===== MAIN CONTENT ===== */}
+      <main className="flex-1 overflow-y-auto ml-0 md:ml-16 mt-14 md:mt-0">{children}</main>
     </div>
   );
 }

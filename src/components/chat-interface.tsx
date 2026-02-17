@@ -48,7 +48,7 @@ function ChatContent({ user }: { user: User }) {
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
       <div className="border-b border-slate-100 px-6 py-4 bg-white">
         <h2 className="font-semibold text-slate-800">
           Chat with {user.organization?.name || "123 Preschool"}
